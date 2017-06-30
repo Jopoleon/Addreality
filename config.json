@@ -1,0 +1,24 @@
+{
+	"ServerPort": "3000",
+	"Postgre": "ssa",
+	"Host": "localhost",
+	"Port": "5432",
+	"User": "postgres",
+	"Password": "qwe",
+	"DBname": "postgres",
+
+	"Metric_1_Max": 680,
+	"Metric_1_Min": 120,
+
+	"Metric_2_Max": 900,
+	"Metric_2_Min": 12,
+
+	"Metric_3_Max": 800,
+	"Metric_3_Min": 46,
+
+	"Metric_4_Max": 700,
+	"Metric_4_Min": 30,
+
+	"Metric_5_Max": 900,
+	"Metric_5_Min": 200
+}
