@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4cf01a95-5d99-483f-9bcb-fb5966f2cf87" name="Default" comment="" />
+    <list default="true" id="4cf01a95-5d99-483f-9bcb-fb5966f2cf87" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/db/db.go" afterPath="$PROJECT_DIR$/db/db.go" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.go" afterPath="$PROJECT_DIR$/main.go" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,11 +15,11 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="main.go" pinned="false" current-in-tab="true">
+      <file leaf-file-name="main.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1848">
-              <caret line="88" column="14" lean-forward="false" selection-start-line="88" selection-start-column="14" selection-end-line="88" selection-end-column="14" />
+            <state relative-caret-position="651">
+              <caret line="49" column="22" lean-forward="false" selection-start-line="49" selection-start-column="22" selection-end-line="49" selection-end-column="22" />
               <folding>
                 <element signature="e#14#290#0" expanded="true" />
               </folding>
@@ -24,13 +27,15 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="db.go" pinned="false" current-in-tab="false">
+      <file leaf-file-name="db.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/db/db.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="840">
-              <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
+            <state relative-caret-position="588">
+              <caret line="34" column="26" lean-forward="true" selection-start-line="34" selection-start-column="26" selection-end-line="34" selection-end-column="26" />
               <folding>
                 <element signature="e#12#128#0" expanded="true" />
+                <marker date="1498837706533" expanded="true" signature="1092:1127" ph="SELECT COUNT... " />
+                <marker date="1498837706533" expanded="true" signature="1345:1382" ph="SELECT COUNT... " />
               </folding>
             </state>
           </provider>
@@ -113,8 +118,8 @@
         <option value="$PROJECT_DIR$/config/config.go" />
         <option value="$PROJECT_DIR$/metric/metric.go" />
         <option value="$PROJECT_DIR$/config.json" />
-        <option value="$PROJECT_DIR$/main.go" />
         <option value="$PROJECT_DIR$/db/init.go" />
+        <option value="$PROJECT_DIR$/main.go" />
         <option value="$PROJECT_DIR$/db/db.go" />
       </list>
     </option>
@@ -227,7 +232,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="DefaultGoTemplateProperty" value="Go File" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Go" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.General" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -354,6 +359,8 @@
           <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
           <folding>
             <element signature="e#12#128#0" expanded="true" />
+            <marker date="1498837706533" expanded="true" signature="1092:1127" ph="SELECT COUNT... " />
+            <marker date="1498837706533" expanded="true" signature="1345:1382" ph="SELECT COUNT... " />
           </folding>
         </state>
       </provider>
@@ -420,6 +427,8 @@
           <caret line="73" column="7" lean-forward="false" selection-start-line="73" selection-start-column="7" selection-end-line="73" selection-end-column="7" />
           <folding>
             <element signature="e#12#128#0" expanded="true" />
+            <marker date="1498837706533" expanded="true" signature="1092:1127" ph="SELECT COUNT... " />
+            <marker date="1498837706533" expanded="true" signature="1345:1382" ph="SELECT COUNT... " />
           </folding>
         </state>
       </provider>
@@ -476,6 +485,8 @@
           <caret line="73" column="7" lean-forward="false" selection-start-line="73" selection-start-column="7" selection-end-line="73" selection-end-column="7" />
           <folding>
             <element signature="e#12#128#0" expanded="true" />
+            <marker date="1498837706533" expanded="true" signature="1092:1127" ph="SELECT COUNT... " />
+            <marker date="1498837706533" expanded="true" signature="1345:1382" ph="SELECT COUNT... " />
           </folding>
         </state>
       </provider>
@@ -586,16 +597,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/db/db.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="840">
-          <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
-          <folding>
-            <element signature="e#12#128#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/db/init.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1554">
@@ -624,10 +625,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1848">
-          <caret line="88" column="14" lean-forward="false" selection-start-line="88" selection-start-column="14" selection-end-line="88" selection-end-column="14" />
+        <state relative-caret-position="651">
+          <caret line="49" column="22" lean-forward="false" selection-start-line="49" selection-start-column="22" selection-end-line="49" selection-end-column="22" />
           <folding>
             <element signature="e#14#290#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/db/db.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="588">
+          <caret line="34" column="26" lean-forward="true" selection-start-line="34" selection-start-column="26" selection-end-line="34" selection-end-column="26" />
+          <folding>
+            <element signature="e#12#128#0" expanded="true" />
+            <marker date="1498837706533" expanded="true" signature="1092:1127" ph="SELECT COUNT... " />
+            <marker date="1498837706533" expanded="true" signature="1345:1382" ph="SELECT COUNT... " />
           </folding>
         </state>
       </provider>

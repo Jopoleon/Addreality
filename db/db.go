@@ -17,45 +17,60 @@ var (
 
 func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s sslmode=disable",
-		host, port, user, password)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s  sslmode=disable",
+		host, port, user, dbname, password)
 	DB, dberr = sql.Open("postgres", psqlInfo)
 
 	if dberr != nil {
 		log.Fatalln("SetDB sql.Open error: ", dberr)
 		return nil, dberr
 	}
-
-	res, err := DB.Exec(`CREATE DATABASE ` + dbname)
-
-	if err.Error() != "pq: база данных \"postgres\" уже существует" {
-		log.Println("SetDB DB.Exec error: CREATE DATABASE IF NOT EXISTS ", dbname, " ", err)
-		return nil, err
-	}
-	log.Println("Creation of DATABASE is ok: ", res)
 	err = DB.Ping()
 	if err != nil {
 		log.Fatalln("SetDB DB.Ping() error: ", err)
 		return nil, err
 	}
+	log.Println("Successfully connected to " + dbname + " database")
+	//res, err := DB.Exec(`CREATE DATABASE ` + dbname)
+	//if err.Error() != "pq: база данных \"postgres\" уже существует" {
+	//	log.Println("SetDB DB.Exec error: CREATE DATABASE IF NOT EXISTS ", dbname, " ", err)
+	//	return nil, err
+	//}
+	//log.Println("Creation of DATABASE is ok: ", res)
 
-	fmt.Println("Successfully connected to Postgre")
 	err = initPostgreTables(DB)
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err
 	}
-	//userID, err := addUser(DB)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//	return err
-	//}
-	//err = initDevices(DB, userID)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//	return err
-	//}
+	var countUsers int
+	err = DB.QueryRow(`SELECT COUNT(*) as count FROM users`).Scan(&countUsers)
+	if err != nil {
+		log.Fatalln("SetDB DB.Query(`SELECT count(*) error: ", err)
+		return nil, err
+	}
+	log.Println("Length of USERS table is: ", countUsers)
+	var countDevices int
+	err = DB.QueryRow(`SELECT COUNT(*) as count FROM devices`).Scan(&countDevices)
+	if err != nil {
+		log.Fatalln("SetDB DB.Query(`SELECT count(*) error: ", err)
+		return nil, err
+	}
+	log.Println("Length of DEVICES table is: ", countDevices)
+	if countUsers == 0 {
+		userID, err := addUser(DB)
+		if err != nil {
+			log.Fatalln(err)
+			return nil, err
+		}
+		if countDevices == 0 {
+			err = initDevices(DB, userID)
+			if err != nil {
+				log.Fatalln(err)
+				return nil, err
+			}
+		}
+	}
 	return DB, nil
 }
 func SaveAlert(m metric.Metric, msg string, DB *sql.DB) error {

@@ -59,6 +59,7 @@ func main() {
 		log.Fatalln(err)
 		return
 	}
+	defer DB.Close()
 }
 
 //CheckMetricValues checks if given metric meet the conditions given in config file
