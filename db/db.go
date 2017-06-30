@@ -56,6 +56,7 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 		log.Fatalln("SetDB DB.Query(`SELECT count(*) error: ", err)
 		return nil, err
 	}
+	var uID int
 	log.Println("Length of DEVICES table is: ", countDevices)
 	if countUsers == 0 {
 		userID, err := addUser(DB)
@@ -63,6 +64,7 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 			log.Fatalln(err)
 			return nil, err
 		}
+		uID = userID
 		if countDevices == 0 {
 			err = initDevices(DB, userID)
 			if err != nil {
@@ -71,14 +73,21 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 			}
 		}
 	}
+	if countDevices == 0 {
+		err = initDevices(DB, uID)
+		if err != nil {
+			log.Fatalln(err)
+			return nil, err
+		}
+	}
 	return DB, nil
 }
 func SaveAlert(m metric.Metric, msg string, DB *sql.DB) error {
-	err := DB.Ping()
-	if err != nil {
-		log.Fatalln("SaveAlert DB.Ping() error: ", err)
-		return err
-	}
+	//err := DB.Ping()
+	//if err != nil {
+	//	log.Fatalln("SaveAlert DB.Ping() error: ", err)
+	//	return err
+	//}
 
 	//device_alerts
 	//(
@@ -91,7 +100,7 @@ INSERT INTO device_alerts (device_id,message)
 VALUES ($1, $2)
 RETURNING id`
 	id := 0
-	err = DB.QueryRow(sqlStatement, m.Device_id, msg).Scan(&id)
+	err := DB.QueryRow(sqlStatement, m.Device_id, msg).Scan(&id)
 	if err != nil {
 		log.Fatalln("SaveAlert db.QueryRow error: ", err)
 		return err
@@ -111,18 +120,18 @@ func SaveMetric(m metric.Metric, DB *sql.DB) error {
 	//server_time TIMESTAMP DEFAULT NOW() — Серверное время сохранения метрик
 	//
 	//CONSTRAINT device_metrics_device_id_fk FOREIGN KEY (device_id) REFERENCES devices (id) ON DELETE CASCADE
-	err := DB.Ping()
-	if err != nil {
-		log.Fatalln("SaveMetric DB.Ping() error: ", err)
-		return err
-	}
+	//err := DB.Ping()
+	//if err != nil {
+	//	log.Fatalln("SaveMetric DB.Ping() error: ", err)
+	//	return err
+	//}
 	//defer DB.Close()
 	sqlStatement := `
 INSERT INTO device_metrics (device_id,metric_1,metric_2,metric_3,metric_4,metric_5,local_time,server_time)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id`
 	var d int
-	err = DB.QueryRow(sqlStatement, m.Device_id, m.Metric_1, m.Metric_2, m.Metric_3, m.Metric_4, m.Metric_5, m.Local_time, time.Now()).Scan(&d)
+	err := DB.QueryRow(sqlStatement, m.Device_id, m.Metric_1, m.Metric_2, m.Metric_3, m.Metric_4, m.Metric_5, m.Local_time, time.Now()).Scan(&d)
 	if err != nil {
 		log.Fatalln("SaveMetric device_metrics db.QueryRow error: ", err)
 		return err

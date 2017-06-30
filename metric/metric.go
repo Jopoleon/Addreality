@@ -23,10 +23,10 @@ type Metric struct {
 func GenerateMetric(deviceId int) error {
 	for {
 		//imitating ping
-		timestep := time.Duration(5000 + rand.Int31n(100))
+		timestep := time.Duration(250 + rand.Intn(5000))
 		time.Sleep(timestep * time.Millisecond)
 		metricBody, err := json.Marshal(Metric{
-			Id:         rand.Intn(1000),
+			Id:         rand.Intn(10000),
 			Device_id:  deviceId,
 			Metric_1:   rand.Intn(1000),
 			Metric_2:   rand.Intn(1000),

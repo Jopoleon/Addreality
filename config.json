@@ -7,6 +7,11 @@
 	"Password": "qwe",
 	"DBname": "postgres",
 
+	"EmailLogin"    : "spareroommailserver",
+	"EmailPassword"  : "Sendkey2017",
+	"EmailServer" : "smtp.gmail.com",
+	"EmailPort"    : 587,
+
 	"Metric_1_Max": 680,
 	"Metric_1_Min": 120,
 

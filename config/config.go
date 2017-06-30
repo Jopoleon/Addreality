@@ -22,6 +22,11 @@ type ConfigType struct {
 	Password   string
 	DBname     string
 
+	EmailLogin    string
+	EmailPassword string
+	EmailServer   string
+	EmailPort     int
+
 	Metric_1_Max int
 	Metric_1_Min int
 	Metric_2_Max int

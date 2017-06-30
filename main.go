@@ -20,6 +20,7 @@ import (
 	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/db"
 	"github.com/Jopoleon/AddRealtyTask/metric"
+	"github.com/Jopoleon/AddRealtyTask/sendemail"
 	"github.com/gorilla/context"
 )
 
@@ -40,20 +41,23 @@ func init() {
 	config.InitConf(configFileName)
 
 	Config = config.GetConfig()
+	sendemail.AuthMailBox(sendemail.EmailUser{Config.EmailLogin, Config.EmailPassword, Config.EmailServer, Config.EmailPort})
 
 	log.Printf("CONFIG FILE MAIN: %+v", Config)
 }
 func main() {
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 1000; i++ {
 		go metric.GenerateMetric(i)
 	}
+
 	DB, dberr = db.SetDB(Config.Host, Config.Port, Config.User, Config.Password, Config.DBname)
 	if dberr != nil {
 		log.Fatalln("main() db.SetDB err: ", dberr)
 		return
 	}
-
+	log.Println("Debug1")
 	http.HandleFunc("/metric", MetricHandler)
+	log.Println("Debug2")
 	err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
 	if err != nil {
 		log.Fatalln(err)
@@ -90,14 +94,14 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var metricData metric.Metric
-	err = json.Unmarshal(body, &metricData)
+	err1 := json.Unmarshal(body, &metricData)
 	if err != nil {
-		log.Println("MetricHandler json.Unmarshal error", err)
+		log.Println("MetricHandler json.Unmarshal error", err1)
 		return
 	}
 	ok, met, err := CheckMetricValues(metricData, Config)
 	if !ok {
-		log.Printf("Bad metric: \n %s, %+v", err, met)
+		//log.Printf("Bad metric: \n %s, %+v", err, met)
 		//save alert to PostgreSQL
 		//fmt.Sprintf("%+v",met)
 		err = db.SaveAlert(met, err.Error()+fmt.Sprintf("%+v", met), DB)
