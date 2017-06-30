@@ -38,7 +38,7 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 	//}
 	//log.Println("Creation of DATABASE is ok: ", res)
 
-	err = initPostgreTables(DB)
+	err = initPostgresTables(DB)
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err
@@ -118,10 +118,11 @@ func SaveMetric(m metric.Metric, DB *sql.DB) error {
 	}
 	//defer DB.Close()
 	sqlStatement := `
-INSERT INTO device_metrics (id,device_id,metric_1,metric_2,metric_3,metric_4,metric_5,local_time,server_time)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO device_metrics (device_id,metric_1,metric_2,metric_3,metric_4,metric_5,local_time,server_time)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id`
-	err = DB.QueryRow(sqlStatement, m.Id, m.Device_id, m.Metric_1, m.Metric_2, m.Metric_3, m.Metric_4, m.Metric_5, m.Local_time, time.Now()).Scan()
+	var d int
+	err = DB.QueryRow(sqlStatement, m.Device_id, m.Metric_1, m.Metric_2, m.Metric_3, m.Metric_4, m.Metric_5, m.Local_time, time.Now()).Scan(&d)
 	if err != nil {
 		log.Fatalln("SaveMetric device_metrics db.QueryRow error: ", err)
 		return err

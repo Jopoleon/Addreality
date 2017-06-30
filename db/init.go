@@ -7,9 +7,32 @@ import (
 	"strconv"
 )
 
-func initPostgreTables(DB *sql.DB) error {
+func initPostgresTables(DB *sql.DB) error {
 	//CREATE DATABASE
+	err := initUsersTable(DB)
+	if err != nil {
+		log.Println("initPostgreTables initUsersTable(DB) error: ", err)
+		return err
+	}
+	err = initDeviceTable(DB)
+	if err != nil {
+		log.Println("initPostgreTables initDeviceTable(DB) error: ", err)
+		return err
+	}
+	err = initDeviceMetricsTable(DB)
+	if err != nil {
+		log.Println("initPostgreTables initDeviceMetricsTable(DB) error: ", err)
+		return err
+	}
+	err = initDeviceAlertsTable(DB)
+	if err != nil {
+		log.Println("initPostgreTables initDeviceAlertsTable(DB) error: ", err)
+		return err
+	}
+	return nil
 
+}
+func initUsersTable(DB *sql.DB) error {
 	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + ` users
 (
   id SERIAL PRIMARY KEY,
@@ -21,9 +44,10 @@ func initPostgreTables(DB *sql.DB) error {
 		return err
 	}
 	log.Println("Creation of users table is ok: ", res)
-
-	////
-	res, err = DB.Exec(`CREATE TABLE IF NOT EXISTS ` + ` devices
+	return nil
+}
+func initDeviceTable(DB *sql.DB) error {
+	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + ` devices
 (
   id INT PRIMARY KEY,
   name varchar(255) NOT NULL,
@@ -36,9 +60,10 @@ func initPostgreTables(DB *sql.DB) error {
 		return err
 	}
 	log.Println("Creation of devices table is ok: ", res)
-
-	////
-	res, err = DB.Exec(`CREATE TABLE IF NOT EXISTS ` + `device_metrics
+	return nil
+}
+func initDeviceMetricsTable(DB *sql.DB) error {
+	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + `device_metrics
 (
     id SERIAL PRIMARY KEY,
     device_id INT NOT NULL,
@@ -57,9 +82,10 @@ func initPostgreTables(DB *sql.DB) error {
 		return err
 	}
 	log.Println("Creation of device_metrics table is ok: ", res)
-
-	////
-	res, err = DB.Exec(`CREATE TABLE IF NOT EXISTS ` + `device_alerts
+	return nil
+}
+func initDeviceAlertsTable(DB *sql.DB) error {
+	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + `device_alerts
 (
   id SERIAL PRIMARY KEY,
   device_id INT,
@@ -73,7 +99,6 @@ func initPostgreTables(DB *sql.DB) error {
 
 	return nil
 }
-
 func addUser(DB *sql.DB) (userID int, err error) {
 	//CREATE TABLE users
 	//(
