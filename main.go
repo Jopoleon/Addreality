@@ -11,17 +11,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"strconv"
-
-	"errors"
-
 	"fmt"
 
 	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/db"
 	"github.com/Jopoleon/AddRealtyTask/metric"
 	"github.com/Jopoleon/AddRealtyTask/sendemail"
-	"github.com/gorilla/context"
 )
 
 var (
@@ -46,8 +41,8 @@ func init() {
 	log.Printf("CONFIG FILE MAIN: %+v", Config)
 }
 func main() {
-	for i := 0; i < 1000; i++ {
-		go metric.GenerateMetric(i)
+	for i := 0; i < 10000; i++ {
+		go metric.GenerateMetric(i, Config.ServerPort)
 	}
 
 	DB, dberr = db.SetDB(Config.Host, Config.Port, Config.User, Config.Password, Config.DBname)
@@ -55,67 +50,60 @@ func main() {
 		log.Fatalln("main() db.SetDB err: ", dberr)
 		return
 	}
+	//defer DBCloser()
+	defer DBCloser()
 	log.Println("Debug1")
 	http.HandleFunc("/metric", MetricHandler)
 	log.Println("Debug2")
-	err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
+	log.Println("Debug3")
+	//err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
+	err := http.ListenAndServe(":"+Config.ServerPort, nil)
 	if err != nil {
 		log.Fatalln(err)
 		return
 	}
-	defer DB.Close()
+
 }
-
-//CheckMetricValues checks if given metric meet the conditions given in config file
-func CheckMetricValues(m metric.Metric, conf *config.ConfigType) (ok bool, met metric.Metric, err error) {
-
-	if conf.Metric_1_Max < m.Metric_1 || m.Metric_1 < conf.Metric_1_Min {
-		return false, m, errors.New("Metric 1 of device" + strconv.Itoa(m.Device_id) + " is out of boundaries.")
-	}
-	if conf.Metric_2_Max < m.Metric_2 || m.Metric_2 < conf.Metric_2_Min {
-		return false, m, errors.New("Metric 2 of device" + strconv.Itoa(m.Device_id) + " is out of boundaries.")
-	}
-	if conf.Metric_3_Max < m.Metric_3 || m.Metric_3 < conf.Metric_3_Min {
-		return false, m, errors.New("Metric 3 of device" + strconv.Itoa(m.Device_id) + " is out of boundaries.")
-	}
-	if conf.Metric_4_Max < m.Metric_4 || m.Metric_4 < conf.Metric_4_Min {
-		return false, m, errors.New("Metric 4 of device" + strconv.Itoa(m.Device_id) + " is out of boundaries.")
-	}
-	if conf.Metric_5_Max < m.Metric_5 || m.Metric_5 < conf.Metric_5_Min {
-		return false, m, errors.New("Metric 5 of device" + strconv.Itoa(m.Device_id) + " is out of boundaries.")
-	}
-	return true, m, nil
+func DBCloser() {
+	log.Println("[WARNING] DB connetcion closed.")
+	DB.Close()
 }
 
 func MetricHandler(w http.ResponseWriter, r *http.Request) {
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("MetricHandler ioutil.ReadAll(resp.Body) error", err)
 		return
 	}
-	var metricData metric.Metric
+	var metricData []metric.Metric
 	err1 := json.Unmarshal(body, &metricData)
 	if err != nil {
 		log.Println("MetricHandler json.Unmarshal error", err1)
 		return
 	}
-	ok, met, err := CheckMetricValues(metricData, Config)
-	if !ok {
-		//log.Printf("Bad metric: \n %s, %+v", err, met)
-		//save alert to PostgreSQL
-		//fmt.Sprintf("%+v",met)
-		err = db.SaveAlert(met, err.Error()+fmt.Sprintf("%+v", met), DB)
-		if err != nil {
-			log.Println("MetricHandler db.SaveAlert error", err)
+	log.Println("Recieved metric data: ", metricData)
+	for _, md := range metricData {
+		ok, met, err := metric.CheckMetricValues(md, Config)
+		if !ok {
+			log.Printf("Bad metric: \n %s, %+v", err, met)
+			//save alert to PostgreSQL
+			//fmt.Sprintf("%+v",met)
+			err = db.SaveAlert(met, err.Error()+fmt.Sprintf("%+v", met), DB)
+			if err != nil {
+				log.Println("MetricHandler db.SaveAlert error", err)
+				return
+			}
+			//send alert email here
+			//save alert to Redis
 			return
 		}
-		//send alert email here
-		//save alert to Redis
-		return
+		err = db.SaveMetric(md, DB)
+
+		if err != nil {
+			log.Println("MetricHandler db.SaveMetric error", err)
+			return
+		}
 	}
-	err = db.SaveMetric(metricData, DB)
-	if err != nil {
-		log.Println("MetricHandler db.SaveMetric error", err)
-		return
-	}
+
 }

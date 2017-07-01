@@ -1,5 +1,5 @@
 {
-	"ServerPort": "3000",
+	"ServerPort": "8080",
 	"Postgre": "ssa",
 	"Host": "localhost",
 	"Port": "5432",
@@ -19,7 +19,7 @@
 	"Metric_2_Min": 12,
 
 	"Metric_3_Max": 800,
-	"Metric_3_Min": 46,
+	"Metric_3_Min": 0,
 
 	"Metric_4_Max": 700,
 	"Metric_4_Min": 30,
