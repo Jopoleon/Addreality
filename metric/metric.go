@@ -1,7 +1,6 @@
 package metric
 
 import (
-	"bytes"
 	"errors"
 	"log"
 	"math/rand"
@@ -10,6 +9,8 @@ import (
 	"time"
 
 	"encoding/json"
+
+	"bytes"
 
 	"github.com/Jopoleon/AddRealtyTask/config"
 )
@@ -62,10 +63,23 @@ func GenerateMetric(deviceId int, port string) error {
 			return err
 		}
 		log.Printf("\n thit is how it looks like::::.... %+v", string(metricBody))
-		_, err = http.Post("http://localhost:"+port+"/metric", "application/json", bytes.NewReader(metricBody))
+		//_, err = http.Post("http://localhost:"+port+"/metric", "application/json", bytes.NewReader(metricBody))
+		client := &http.Client{}
+		req, err := http.NewRequest("http://localhost:"+port+"/metric", "application/json", bytes.NewReader(metricBody))
+
+		// NOTE this !!
+		req.Close = true
+
+		req.Header.Set("Content-Type", "application/json")
+		req.SetBasicAuth("user", "pass")
+		resp, err := client.Do(req)
+
 		if err != nil {
 			log.Println("GenerateMetric json.Marshal error: ", err)
 			return err
+		}
+		if resp != nil {
+			defer resp.Body.Close()
 		}
 	}
 }
