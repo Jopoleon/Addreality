@@ -12,7 +12,7 @@ import (
 	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/db"
 	"github.com/Jopoleon/AddRealtyTask/metric"
-	"github.com/Jopoleon/AddRealtyTask/redis"
+	"github.com/Jopoleon/AddRealtyTask/redisAlert"
 	"github.com/Jopoleon/AddRealtyTask/sendemail"
 )
 
@@ -38,7 +38,7 @@ func init() {
 	log.Printf("CONFIG FILE MAIN: %+v", Config)
 }
 func main() {
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		go metric.GenerateMetric(i, Config.ServerPort)
 	}
 
@@ -47,7 +47,7 @@ func main() {
 		log.Fatalln("main() db.SetDB err: ", dberr)
 		return
 	}
-	_, err := redis.SetRedisPool(Config.RedisPort)
+	err := redisAlert.SetRedisPool(Config.RedisPort)
 	if dberr != nil {
 		log.Fatalln("main() redis.SetRedisPool err: ", dberr)
 		return
@@ -64,6 +64,7 @@ func main() {
 		log.Fatalln(err)
 		return
 	}
+	log.Println("Server started on port ", Config.ServerPort)
 
 }
 func DBCloser() {
@@ -84,24 +85,30 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("MetricHandler json.Unmarshal error", err1)
 		return
 	}
-	log.Println("Recieved metric data: ", metricData)
+	//log.Println("Recieved metric data: ", metricData)
 	for _, md := range metricData {
-		ok, met, err := metric.CheckMetricValues(md, Config)
+		ok, met, err1 := metric.CheckMetricValues(md, Config)
 		if !ok {
-
+			msg := err1.Error() + fmt.Sprintf("%+v", met)
+			log.Println("HANDLER DEBUG1")
 			log.Printf("Bad metric: \n %s, %+v", err, met)
 			//save alert to PostgreSQL
-			err = db.SaveAlert(met, err.Error()+fmt.Sprintf("%+v", met), DB)
+			err = db.SaveAlert(met, msg, DB)
 			if err != nil {
 				log.Println("MetricHandler db.SaveAlert error", err)
 				return
 			}
+			log.Println("HANDLER DEBUG2")
 			//save alert to Redis
-			err = redis.SaveAlertRedis(md.Device_id, err.Error()+fmt.Sprintf("%+v", met))
+
+			log.Println(" >>>>>>>>met.Device_id:", met.Device_id, "And mesaage: ", msg)
+			err = redisAlert.SaveAlertRedis(met.Device_id, msg)
+			//err = redisAlert.SaveAlertRedis(1233, "TEST MESSAGE")
 			if err != nil {
 				log.Println("MetricHandler redis.SaveAlertRedis error", err)
 				return
 			}
+			log.Println("HANDLER DEBUG3")
 			//sav
 			//send alert email here
 
@@ -110,7 +117,7 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		err = db.SaveMetric(md, DB)
 
 		if err != nil {
-			log.Println("MetricHandler db.SaveMetric error", err)
+			log.Println("MetricHandler saving good metric db.SaveMetric error", err)
 			return
 		}
 	}

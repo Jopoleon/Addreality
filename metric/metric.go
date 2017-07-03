@@ -15,7 +15,6 @@ import (
 )
 
 type Metric struct {
-	//Id         int
 	Device_id  int
 	Metric_1   int
 	Metric_2   int
@@ -25,7 +24,7 @@ type Metric struct {
 	Local_time time.Time
 }
 
-func GenerateMetric(deviceId int, port string) error {
+func GenerateMetric(deviceId int, serverport string) error {
 	for {
 		//imitating ping
 		timestep := time.Duration(250 + rand.Intn(5000))
@@ -61,10 +60,9 @@ func GenerateMetric(deviceId int, port string) error {
 			log.Println("GenerateMetric json.Marshal error: ", err)
 			return err
 		}
-		log.Printf("\n thit is how it looks like::::.... %+v", string(metricBody))
-		_, err = http.Post("http://localhost:"+port+"/metric", "application/json", bytes.NewReader(metricBody))
+		_, err = http.Post("http://localhost:"+serverport+"/metric", "application/json", bytes.NewReader(metricBody))
 		if err != nil {
-			log.Println("GenerateMetric json.Marshal error: ", err)
+			log.Println("GenerateMetric http.Post error: ", err)
 			return err
 		}
 	}
