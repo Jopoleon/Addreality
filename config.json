@@ -1,5 +1,5 @@
 {
-	"ServerPort": "8080",
+	"ServerPort": "8090",
 	"Postgre": "ssa",
 	"Host": "localhost",
 	"Port": "5432",

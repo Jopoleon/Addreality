@@ -1,4 +1,4 @@
-package redis
+package redisAlert
 
 import (
 	"log"
@@ -10,16 +10,17 @@ import (
 
 var rpool *pool.Pool
 
-func SetRedisPool(repisPort string) (rpool *pool.Pool, err error) {
+func SetRedisPool(repisPort string) (err error) {
 	//var err error
 	// Establish a pool of 10 connections to the Redis server listening on
 	// port 6379 of the local machine.
-	rpool, err = pool.New("tcp", "localhost:"+repisPort, 10)
+	rpool, err = pool.New("tcp", "localhost:"+repisPort, 500)
 	if err != nil {
 		log.Panic("GetRedisPool pool.New error:", err)
-		return nil, err
+		return err
 	}
-	return rpool, nil
+
+	return nil
 }
 
 //(
@@ -33,6 +34,7 @@ type Alert struct {
 }
 
 func SaveAlertRedis(id int, msg string) error {
+	log.Println("SAR DEBUG1")
 	conn, err := rpool.Get()
 	if err != nil {
 		log.Fatalln("SaveAlertRedis  db.Get() error:", err)
@@ -42,7 +44,7 @@ func SaveAlertRedis(id int, msg string) error {
 	defer rpool.Put(conn)
 
 	//HSET addhash DeviseID:id, Message:msg
-	err = conn.Cmd("HSET", "addhash", "DeviseID:"+strconv.Itoa(id), "Message:"+msg).Err
+	err = conn.Cmd("HMSET", "DeviceID_"+strconv.Itoa(id), "Message", msg).Err
 	if err != nil {
 		log.Fatalln("SaveAlertRedis conn.Cmd error:", err)
 		return err
