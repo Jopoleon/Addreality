@@ -22,6 +22,8 @@ type ConfigType struct {
 	Password   string
 	DBname     string
 
+	RedisPort string
+
 	EmailLogin    string
 	EmailPassword string
 	EmailServer   string

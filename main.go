@@ -1,21 +1,18 @@
 package main
 
 import (
+	"database/sql"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-
-	"flag"
-
-	"database/sql"
-
-	"encoding/json"
-	"io/ioutil"
-
-	"fmt"
 
 	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/db"
 	"github.com/Jopoleon/AddRealtyTask/metric"
+	"github.com/Jopoleon/AddRealtyTask/redis"
 	"github.com/Jopoleon/AddRealtyTask/sendemail"
 )
 
@@ -50,6 +47,11 @@ func main() {
 		log.Fatalln("main() db.SetDB err: ", dberr)
 		return
 	}
+	_, err := redis.SetRedisPool(Config.RedisPort)
+	if dberr != nil {
+		log.Fatalln("main() redis.SetRedisPool err: ", dberr)
+		return
+	}
 	//defer DBCloser()
 	defer DBCloser()
 	log.Println("Debug1")
@@ -57,7 +59,7 @@ func main() {
 	log.Println("Debug2")
 	log.Println("Debug3")
 	//err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
-	err := http.ListenAndServe(":"+Config.ServerPort, nil)
+	err = http.ListenAndServe(":"+Config.ServerPort, nil)
 	if err != nil {
 		log.Fatalln(err)
 		return
@@ -86,16 +88,23 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 	for _, md := range metricData {
 		ok, met, err := metric.CheckMetricValues(md, Config)
 		if !ok {
+
 			log.Printf("Bad metric: \n %s, %+v", err, met)
 			//save alert to PostgreSQL
-			//fmt.Sprintf("%+v",met)
 			err = db.SaveAlert(met, err.Error()+fmt.Sprintf("%+v", met), DB)
 			if err != nil {
 				log.Println("MetricHandler db.SaveAlert error", err)
 				return
 			}
-			//send alert email here
 			//save alert to Redis
+			err = redis.SaveAlertRedis(md.Device_id, err.Error()+fmt.Sprintf("%+v", met))
+			if err != nil {
+				log.Println("MetricHandler redis.SaveAlertRedis error", err)
+				return
+			}
+			//sav
+			//send alert email here
+
 			return
 		}
 		err = db.SaveMetric(md, DB)
