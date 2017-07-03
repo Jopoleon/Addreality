@@ -12,7 +12,6 @@ import (
 	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/db"
 	"github.com/Jopoleon/AddRealtyTask/metric"
-	"github.com/Jopoleon/AddRealtyTask/redisAlert"
 	"github.com/Jopoleon/AddRealtyTask/sendemail"
 )
 
@@ -47,11 +46,11 @@ func main() {
 		log.Fatalln("main() db.SetDB err: ", dberr)
 		return
 	}
-	err := redisAlert.SetRedisPool(Config.RedisPort)
-	if dberr != nil {
-		log.Fatalln("main() redis.SetRedisPool err: ", dberr)
-		return
-	}
+	//err := redisAlert.SetRedisPool(Config.RedisPort)
+	//if dberr != nil {
+	//	log.Fatalln("main() redis.SetRedisPool err: ", dberr)
+	//	return
+	//}
 	//defer DBCloser()
 	defer DBCloser()
 	log.Println("Debug1")
@@ -59,7 +58,7 @@ func main() {
 	log.Println("Debug2")
 	log.Println("Debug3")
 	//err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
-	err = http.ListenAndServe(":"+Config.ServerPort, nil)
+	err := http.ListenAndServe(":"+Config.ServerPort, nil)
 	if err != nil {
 		log.Fatalln(err)
 		return
@@ -102,12 +101,12 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 			//save alert to Redis
 
 			log.Println(" >>>>>>>>met.Device_id:", met.Device_id, "And mesaage: ", msg)
-			err = redisAlert.SaveAlertRedis(met.Device_id, msg)
-			//err = redisAlert.SaveAlertRedis(1233, "TEST MESSAGE")
-			if err != nil {
-				log.Println("MetricHandler redis.SaveAlertRedis error", err)
-				return
-			}
+			//err = redisAlert.SaveAlertRedis(met.Device_id, msg)
+			////err = redisAlert.SaveAlertRedis(1233, "TEST MESSAGE")
+			//if err != nil {
+			//	log.Println("MetricHandler redis.SaveAlertRedis error", err)
+			//	return
+			//}
 			log.Println("HANDLER DEBUG3")
 			//sav
 			//send alert email here
