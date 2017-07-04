@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	Config *config.ConfigType
-	DB     *sql.DB
-	dberr  error
+	Config    *config.ConfigType
+	DB        *sql.DB
+	dberr     error
+	EmailAuth sendemail.SmtpAuth
 )
 
 func init() {
@@ -32,12 +33,13 @@ func init() {
 	config.InitConf(configFileName)
 
 	Config = config.GetConfig()
-	sendemail.AuthMailBox(sendemail.EmailUser{Config.EmailLogin, Config.EmailPassword, Config.EmailServer, Config.EmailPort})
+	EmailAuth = sendemail.AuthMailBox(sendemail.EmailUser{Config.EmailLogin, Config.EmailPassword, Config.EmailServer, Config.EmailPort})
 
 	log.Printf("CONFIG FILE MAIN: %+v", Config)
 }
+
 func main() {
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 1; i++ {
 		go metric.GenerateMetric(i, Config.ServerPort)
 	}
 
@@ -57,7 +59,7 @@ func main() {
 	http.HandleFunc("/metric", MetricHandler)
 	log.Println("Debug2")
 	log.Println("Debug3")
-	//err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
+
 	err := http.ListenAndServe(":"+Config.ServerPort, nil)
 	if err != nil {
 		log.Fatalln(err)
@@ -84,30 +86,38 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("MetricHandler json.Unmarshal error", err1)
 		return
 	}
-	//log.Println("Recieved metric data: ", metricData)
 	for _, md := range metricData {
 		ok, met, err1 := metric.CheckMetricValues(md, Config)
 		if !ok {
 			msg := err1.Error() + fmt.Sprintf("%+v", met)
-			log.Println("HANDLER DEBUG1")
-			log.Printf("Bad metric: \n %s, %+v", err, met)
+
+			log.Printf("Bad metric: \n %s, %+v", msg, met)
 			//save alert to PostgreSQL
 			err = db.SaveAlert(met, msg, DB)
 			if err != nil {
 				log.Println("MetricHandler db.SaveAlert error", err)
 				return
 			}
-			log.Println("HANDLER DEBUG2")
+			userinfo, err := db.GetUserInfo(met.Device_id, DB)
+			if err != nil {
+				log.Println("MetricHandler db.GetUserInfo error", err)
+				return
+			}
+			err = sendemail.SendEmailwithMessage(userinfo.Email, msg, EmailAuth)
+			if err != nil {
+				log.Println("MetricHandler sendemail.SendEmailwithMessage error", err)
+				return
+			}
 			//save alert to Redis
 
-			log.Println(" >>>>>>>>met.Device_id:", met.Device_id, "And mesaage: ", msg)
+			//log.Println(" >>>>>>>>met.Device_id:", met.Device_id, "And mesaage: ", msg)
 			//err = redisAlert.SaveAlertRedis(met.Device_id, msg)
 			////err = redisAlert.SaveAlertRedis(1233, "TEST MESSAGE")
 			//if err != nil {
 			//	log.Println("MetricHandler redis.SaveAlertRedis error", err)
 			//	return
 			//}
-			log.Println("HANDLER DEBUG3")
+
 			//sav
 			//send alert email here
 

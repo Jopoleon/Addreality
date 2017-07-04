@@ -7,6 +7,17 @@ import (
 	"strconv"
 )
 
+type User struct {
+	ID    int
+	Name  string
+	Email string
+}
+type Device struct {
+	ID     int
+	Name   string
+	UserID int
+}
+
 func initPostgresTables(DB *sql.DB) error {
 	//CREATE DATABASE
 	err := initUsersTable(DB)
@@ -99,13 +110,9 @@ func initDeviceAlertsTable(DB *sql.DB) error {
 
 	return nil
 }
+
 func addUser(DB *sql.DB) (userID int, err error) {
-	//CREATE TABLE users
-	//(
-	//	id INT PRIMARY KEY,
-	//	name varchar(255),
-	//	email varchar(255) NOT NULL
-	//)
+
 	sqlStatement := `
 INSERT INTO users (name, email)
 VALUES ($1, $2)

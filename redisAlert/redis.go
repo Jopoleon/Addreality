@@ -10,10 +10,10 @@ import (
 
 var rpool *pool.Pool
 
+// SetRedisPool Establish a pool of 500 connections to the Redis server listening on
+// port repisPort of the local machine.
 func SetRedisPool(repisPort string) (err error) {
-	//var err error
-	// Establish a pool of 10 connections to the Redis server listening on
-	// port 6379 of the local machine.
+
 	rpool, err = pool.New("tcp", "localhost:"+repisPort, 500)
 	if err != nil {
 		log.Panic("GetRedisPool pool.New error:", err)
@@ -23,16 +23,7 @@ func SetRedisPool(repisPort string) (err error) {
 	return nil
 }
 
-//(
-//id INT PRIMARY KEY,
-//device_id INT,
-//message TEXT
-//)
-type Alert struct {
-	DeviseID string
-	Message  string
-}
-
+// SaveAlertRedis saves the last notification about bad metric in Redis in map DeviceID_ - Message
 func SaveAlertRedis(id int, msg string) error {
 	log.Println("SAR DEBUG1")
 	conn, err := rpool.Get()

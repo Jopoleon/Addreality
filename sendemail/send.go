@@ -17,9 +17,8 @@ type SmtpAuth struct {
 	auth smtp.Auth
 }
 
+// AuthMailBox authorises your email server to send notifications
 func AuthMailBox(user EmailUser) (auth SmtpAuth) {
-	//emailUser := &EmailUser{"spareroommailserver", "Sendkey2017", "smtp.gmail.com", 587}
-
 	auth1 := smtp.PlainAuth("",
 		user.Username,
 		user.Password,
@@ -36,7 +35,7 @@ func AuthMailBox(user EmailUser) (auth SmtpAuth) {
 func SendEmailwithMessage(addres, msg string, auth SmtpAuth) error {
 
 	var err error
-
+	log.Printf("%+v", auth, "Email Auth Info")
 	msg2 := []byte(msg)
 
 	err = smtp.SendMail(auth.user.EmailServer+":"+strconv.Itoa(auth.user.Port),

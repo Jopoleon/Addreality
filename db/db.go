@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"strconv"
+
 	"github.com/Jopoleon/AddRealtyTask/metric"
 	_ "github.com/lib/pq"
 )
@@ -137,4 +139,34 @@ RETURNING id`
 		return err
 	}
 	return nil
+}
+func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
+	sqlStatement2 := `SELECT * FROM devices WHERE name=$1;`
+	var device Device
+	row := DB.QueryRow(sqlStatement2, "Device"+strconv.Itoa(deviceID))
+	err = row.Scan(&device.ID, &device.Name, &device.UserID)
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return user, sql.ErrNoRows
+	case nil:
+		fmt.Println(device)
+		sqlStatement2 := `SELECT * FROM users WHERE id=$1;`
+		var user1 User
+		row := DB.QueryRow(sqlStatement2, device.UserID)
+		err := row.Scan(&user.ID, &user.Name, &user.Email)
+		switch err {
+		case sql.ErrNoRows:
+			fmt.Println("No rows were returned!")
+			return user, err
+		case nil:
+			fmt.Println(user)
+			return user1, err
+		default:
+			panic("GetUserInfo SELECT * FROM users row.Scan error: " + err.Error())
+		}
+	default:
+		panic("GetUserInfo SELECT * FROM devices row.Scan error: " + err.Error())
+	}
+	//return nil, nil
 }
