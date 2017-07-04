@@ -55,7 +55,7 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 	var uID int
 	log.Println("Length of DEVICES table is: ", countDevices)
 	if countUsers == 0 {
-		userID, err := addUser(DB)
+		userID, err := AddUser(DB)
 		if err != nil {
 			log.Fatalln(err)
 			return nil, err
@@ -117,7 +117,7 @@ func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 		fmt.Println("No rows were returned!")
 		return user, sql.ErrNoRows
 	case nil:
-		fmt.Println(device)
+		//fmt.Println(device)
 		sqlStatement2 := `SELECT * FROM users WHERE id=$1;`
 		//var user1 User
 		row := DB.QueryRow(sqlStatement2, device.UserID)
@@ -130,10 +130,12 @@ func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 			fmt.Println("GetUserInfo user found: ", user)
 			return user, err
 		default:
-			panic("GetUserInfo SELECT * FROM users row.Scan error: " + err.Error())
+			log.Println("GetUserInfo SELECT * FROM users row.Scan error: " + err.Error())
+			return user, err
 		}
 	default:
-		panic("GetUserInfo SELECT * FROM devices row.Scan error: " + err.Error())
+		log.Println("GetUserInfo SELECT * FROM devices row.Scan error: " + err.Error())
+		return user, err
 	}
 	//return nil, nil
 }

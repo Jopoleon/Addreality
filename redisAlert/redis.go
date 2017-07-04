@@ -34,7 +34,7 @@ func SaveAlertRedis(id int, msg string) error {
 
 	defer rpool.Put(conn)
 
-	//HSET addhash DeviseID:id, Message:msg
+	//HSET addhash DeviseID_id, Message:msg
 	err = conn.Cmd("HMSET", "DeviceID_"+strconv.Itoa(id), "Message", msg).Err
 	if err != nil {
 		log.Println("SaveAlertRedis conn.Cmd error:", err)

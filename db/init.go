@@ -18,6 +18,7 @@ type Device struct {
 	UserID int
 }
 
+// initPostgresTables init all PostgreSQL tables
 func initPostgresTables(DB *sql.DB) error {
 
 	err := initUsersTable(DB)
@@ -57,6 +58,7 @@ func initUsersTable(DB *sql.DB) error {
 	log.Println("Creation of users table is ok: ", res)
 	return nil
 }
+
 func initDeviceTable(DB *sql.DB) error {
 	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + ` devices
 (
@@ -73,6 +75,7 @@ func initDeviceTable(DB *sql.DB) error {
 	log.Println("Creation of devices table is ok: ", res)
 	return nil
 }
+
 func initDeviceMetricsTable(DB *sql.DB) error {
 	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + `device_metrics
 (
@@ -95,6 +98,7 @@ func initDeviceMetricsTable(DB *sql.DB) error {
 	log.Println("Creation of device_metrics table is ok: ", res)
 	return nil
 }
+
 func initDeviceAlertsTable(DB *sql.DB) error {
 	res, err := DB.Exec(`CREATE TABLE IF NOT EXISTS ` + `device_alerts
 (
@@ -111,7 +115,9 @@ func initDeviceAlertsTable(DB *sql.DB) error {
 	return nil
 }
 
-func addUser(DB *sql.DB) (userID int, err error) {
+// AddUser adds new user to users table and returns new user's ID
+// so we can create devices with that user's ID
+func AddUser(DB *sql.DB) (userID int, err error) {
 
 	sqlStatement := `
 INSERT INTO users (name, email)
@@ -126,6 +132,8 @@ RETURNING id`
 	fmt.Println("New User ID is:", id)
 	return id, nil
 }
+
+//initDevices creates devices with given userID
 func initDevices(DB *sql.DB, userID int) error {
 	sqlStatement := `
 INSERT INTO devices (id, name, user_id)

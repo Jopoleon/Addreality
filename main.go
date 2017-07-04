@@ -81,11 +81,13 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var metricData []metric.Metric
+	//
 	err = json.Unmarshal(body, &metricData)
 	if err != nil {
 		log.Println("MetricHandler json.Unmarshal error", err)
 		return
 	}
+	// iterating through all metrics
 	for _, md := range metricData {
 		ok, met, err1 := metric.CheckMetricValues(md, Config)
 		if !ok {

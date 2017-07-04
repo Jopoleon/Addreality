@@ -72,6 +72,7 @@ func GenerateMetric(deviceId int, serverport string) error {
 }
 
 //CheckMetricValues checks if given metric meets the conditions given in config file
+// and returns corresponding error
 func CheckMetricValues(m Metric, conf *config.ConfigType) (ok bool, met Metric, err error) {
 
 	if conf.Metric_1_Max < m.Metric_1 || m.Metric_1 < conf.Metric_1_Min {
