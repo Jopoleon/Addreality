@@ -33,12 +33,6 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 		return nil, err
 	}
 	log.Println("Successfully connected to " + dbname + " database")
-	//res, err := DB.Exec(`CREATE DATABASE ` + dbname)
-	//if err.Error() != "pq: база данных \"postgres\" уже существует" {
-	//	log.Println("SetDB DB.Exec error: CREATE DATABASE IF NOT EXISTS ", dbname, " ", err)
-	//	return nil, err
-	//}
-	//log.Println("Creation of DATABASE is ok: ", res)
 
 	err = initPostgresTables(DB)
 	if err != nil {
@@ -84,24 +78,14 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 	}
 	return DB, nil
 }
-func SaveAlert(m metric.Metric, msg string, DB *sql.DB) error {
-	//err := DB.Ping()
-	//if err != nil {
-	//	log.Fatalln("SaveAlert DB.Ping() error: ", err)
-	//	return err
-	//}
 
-	//device_alerts
-	//(
-	//	id INT PRIMARY KEY,
-	//	device_id INT,
-	//	message TEXT
-	//)
+func SaveAlert(m metric.Metric, msg string, DB *sql.DB) error {
+
 	sqlStatement := `
 INSERT INTO device_alerts (device_id,message)
 VALUES ($1, $2)
 RETURNING id`
-	id := 0
+	var id int
 	err := DB.QueryRow(sqlStatement, m.Device_id, msg).Scan(&id)
 	if err != nil {
 		log.Fatalln("SaveAlert db.QueryRow error: ", err)
@@ -111,23 +95,6 @@ RETURNING id`
 }
 
 func SaveMetric(m metric.Metric, DB *sql.DB) error {
-	//id INT PRIMARY KEY,
-	//	device_id INT NOT NULL,
-	//	metric_1 INT,
-	//	metric_2 INT,
-	//	metric_3 INT,
-	//	metric_4 INT,
-	//	metric_5 INT,
-	//	local_time TIMESTAMP, —Время метрик на устройстве
-	//server_time TIMESTAMP DEFAULT NOW() — Серверное время сохранения метрик
-	//
-	//CONSTRAINT device_metrics_device_id_fk FOREIGN KEY (device_id) REFERENCES devices (id) ON DELETE CASCADE
-	//err := DB.Ping()
-	//if err != nil {
-	//	log.Fatalln("SaveMetric DB.Ping() error: ", err)
-	//	return err
-	//}
-	//defer DB.Close()
 	sqlStatement := `
 INSERT INTO device_metrics (device_id,metric_1,metric_2,metric_3,metric_4,metric_5,local_time,server_time)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -152,7 +119,7 @@ func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 	case nil:
 		fmt.Println(device)
 		sqlStatement2 := `SELECT * FROM users WHERE id=$1;`
-		var user1 User
+		//var user1 User
 		row := DB.QueryRow(sqlStatement2, device.UserID)
 		err := row.Scan(&user.ID, &user.Name, &user.Email)
 		switch err {
@@ -160,8 +127,8 @@ func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 			fmt.Println("No rows were returned!")
 			return user, err
 		case nil:
-			fmt.Println(user)
-			return user1, err
+			fmt.Println("GetUserInfo user found: ", user)
+			return user, err
 		default:
 			panic("GetUserInfo SELECT * FROM users row.Scan error: " + err.Error())
 		}

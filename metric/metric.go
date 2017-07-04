@@ -62,11 +62,12 @@ func GenerateMetric(deviceId int, serverport string) error {
 			log.Println("GenerateMetric json.Marshal error: ", err)
 			return err
 		}
-		_, err = http.Post("http://localhost:"+serverport+"/metric", "application/json", bytes.NewReader(metricBody))
+		resp, err := http.Post("http://localhost:"+serverport+"/metric", "application/json", bytes.NewReader(metricBody))
 		if err != nil {
 			log.Println("GenerateMetric http.Post error: ", err)
 			return err
 		}
+		resp.Body.Close()
 	}
 }
 

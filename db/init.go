@@ -19,7 +19,7 @@ type Device struct {
 }
 
 func initPostgresTables(DB *sql.DB) error {
-	//CREATE DATABASE
+
 	err := initUsersTable(DB)
 	if err != nil {
 		log.Println("initPostgreTables initUsersTable(DB) error: ", err)
@@ -127,11 +127,6 @@ RETURNING id`
 	return id, nil
 }
 func initDevices(DB *sql.DB, userID int) error {
-	//id INT PRIMARY KEY,
-	//	name varchar(255) NOT NULL,
-	//	user_id INT NOT NULL,
-	//
-	//	CONSTRAINT devices_user_id_fk FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
 	sqlStatement := `
 INSERT INTO devices (id, name, user_id)
 VALUES ($1, $2, $3)
@@ -143,8 +138,6 @@ RETURNING id`
 			log.Fatalln("initDevices db.QueryRow error: ", err)
 			return err
 		}
-		//fmt.Println("New Device ID is:", id)
 	}
-
 	return nil
 }

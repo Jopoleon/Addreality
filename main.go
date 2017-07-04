@@ -45,7 +45,7 @@ func main() {
 
 	DB, dberr = db.SetDB(Config.Host, Config.Port, Config.User, Config.Password, Config.DBname)
 	if dberr != nil {
-		log.Fatalln("main() db.SetDB err: ", dberr)
+		log.Println("main() db.SetDB err: ", dberr)
 		return
 	}
 	//err := redisAlert.SetRedisPool(Config.RedisPort)
@@ -54,23 +54,23 @@ func main() {
 	//	return
 	//}
 	//defer DBCloser()
-	defer DBCloser()
-	log.Println("Debug1")
+	defer DB.Close()
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 	http.HandleFunc("/metric", MetricHandler)
-	log.Println("Debug2")
-	log.Println("Debug3")
-
 	err := http.ListenAndServe(":"+Config.ServerPort, nil)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return
 	}
 	log.Println("Server started on port ", Config.ServerPort)
 
-}
-func DBCloser() {
-	log.Println("[WARNING] DB connetcion closed.")
-	DB.Close()
 }
 
 func MetricHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,9 +81,9 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var metricData []metric.Metric
-	err1 := json.Unmarshal(body, &metricData)
+	err = json.Unmarshal(body, &metricData)
 	if err != nil {
-		log.Println("MetricHandler json.Unmarshal error", err1)
+		log.Println("MetricHandler json.Unmarshal error", err)
 		return
 	}
 	for _, md := range metricData {
@@ -103,6 +103,7 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println("MetricHandler db.GetUserInfo error", err)
 				return
 			}
+
 			err = sendemail.SendEmailwithMessage(userinfo.Email, msg, EmailAuth)
 			if err != nil {
 				log.Println("MetricHandler sendemail.SendEmailwithMessage error", err)

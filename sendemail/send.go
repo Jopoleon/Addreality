@@ -32,17 +32,20 @@ func AuthMailBox(user EmailUser) (auth SmtpAuth) {
 }
 
 //SendEmailwithMessage sends message to user with message about metric out of boundaries
-func SendEmailwithMessage(addres, msg string, auth SmtpAuth) error {
+func SendEmailwithMessage(address, msg string, auth SmtpAuth) error {
 
 	var err error
-	log.Printf("%+v", auth, "Email Auth Info")
-	msg2 := []byte(msg)
-
+	log.Printf("%+v", auth)
+	msg1 := []byte("To: " + address + "\r\n" +
+		"Subject: Bad Metric notification\r\n" +
+		"\r\n" +
+		msg)
+	log.Println("SendEmailwithMessage address and msg:", address, msg)
 	err = smtp.SendMail(auth.user.EmailServer+":"+strconv.Itoa(auth.user.Port),
 		auth.auth,
 		auth.user.Username,
-		[]string{addres},
-		msg2)
+		[]string{address},
+		msg1)
 	if err != nil {
 		log.Print("SendEmailwithMessage ERROR: attempting to send a mail ", err)
 		return err

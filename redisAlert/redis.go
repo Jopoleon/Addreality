@@ -16,7 +16,7 @@ func SetRedisPool(repisPort string) (err error) {
 
 	rpool, err = pool.New("tcp", "localhost:"+repisPort, 500)
 	if err != nil {
-		log.Panic("GetRedisPool pool.New error:", err)
+		log.Println("GetRedisPool pool.New error:", err)
 		return err
 	}
 
@@ -28,7 +28,7 @@ func SaveAlertRedis(id int, msg string) error {
 	log.Println("SAR DEBUG1")
 	conn, err := rpool.Get()
 	if err != nil {
-		log.Fatalln("SaveAlertRedis  db.Get() error:", err)
+		log.Println("SaveAlertRedis  db.Get() error:", err)
 		return err
 	}
 
@@ -37,7 +37,7 @@ func SaveAlertRedis(id int, msg string) error {
 	//HSET addhash DeviseID:id, Message:msg
 	err = conn.Cmd("HMSET", "DeviceID_"+strconv.Itoa(id), "Message", msg).Err
 	if err != nil {
-		log.Fatalln("SaveAlertRedis conn.Cmd error:", err)
+		log.Println("SaveAlertRedis conn.Cmd error:", err)
 		return err
 	}
 	return nil
