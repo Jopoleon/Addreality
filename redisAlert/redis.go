@@ -25,7 +25,7 @@ func SetRedisPool(repisPort string) (err error) {
 
 // SaveAlertRedis saves the last notification about bad metric in Redis in map DeviceID_ - Message
 func SaveAlertRedis(id int, msg string) error {
-	log.Println("SAR DEBUG1")
+
 	conn, err := rpool.Get()
 	if err != nil {
 		log.Println("SaveAlertRedis  db.Get() error:", err)

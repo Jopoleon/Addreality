@@ -8,6 +8,7 @@ import (
 
 	"strconv"
 
+	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/metric"
 	_ "github.com/lib/pq"
 )
@@ -17,10 +18,12 @@ var (
 	dberr error
 )
 
-func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
+// SetDB starts connection to PostgreSQL, initializing all requierd tables
+// and fills it with 1 new User and 10000 devices
+func SetDB(conf config.ConfigType) (DB *sql.DB, err error) {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s  sslmode=disable",
-		host, port, user, dbname, password)
+		conf.Host, conf.Port, conf.User, conf.DBname, conf.Password)
 	DB, dberr = sql.Open("postgres", psqlInfo)
 
 	if dberr != nil {
@@ -55,7 +58,10 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 	var uID int
 	log.Println("Length of DEVICES table is: ", countDevices)
 	if countUsers == 0 {
-		userID, err := AddUser(DB)
+		userID, err := AddUser(DB, User{
+			Name:  conf.TestUserName,
+			Email: conf.TestUserEmail,
+		})
 		if err != nil {
 			log.Fatalln(err)
 			return nil, err
@@ -79,6 +85,7 @@ func SetDB(host, port, user, password, dbname string) (DB *sql.DB, err error) {
 	return DB, nil
 }
 
+//SaveAlert saves alert about metric in PostgreSQL
 func SaveAlert(m metric.Metric, msg string, DB *sql.DB) error {
 
 	sqlStatement := `
@@ -94,6 +101,7 @@ RETURNING id`
 	return nil
 }
 
+//SaveMetric saves metric in PostgreSQL
 func SaveMetric(m metric.Metric, DB *sql.DB) error {
 	sqlStatement := `
 INSERT INTO device_metrics (device_id,metric_1,metric_2,metric_3,metric_4,metric_5,local_time,server_time)
@@ -107,6 +115,8 @@ RETURNING id`
 	}
 	return nil
 }
+
+//GetUserInfo returns information about user by DeviceID
 func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 	sqlStatement2 := `SELECT * FROM devices WHERE name=$1;`
 	var device Device
@@ -117,9 +127,7 @@ func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 		fmt.Println("No rows were returned!")
 		return user, sql.ErrNoRows
 	case nil:
-		//fmt.Println(device)
 		sqlStatement2 := `SELECT * FROM users WHERE id=$1;`
-		//var user1 User
 		row := DB.QueryRow(sqlStatement2, device.UserID)
 		err := row.Scan(&user.ID, &user.Name, &user.Email)
 		switch err {
@@ -137,5 +145,4 @@ func GetUserInfo(deviceID int, DB *sql.DB) (user User, err error) {
 		log.Println("GetUserInfo SELECT * FROM devices row.Scan error: " + err.Error())
 		return user, err
 	}
-	//return nil, nil
 }

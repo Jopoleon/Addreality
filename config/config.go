@@ -15,7 +15,6 @@ import (
 //dbname = "test"
 type ConfigType struct {
 	ServerPort string
-	Postgre    string
 	Host       string
 	Port       string
 	User       string
@@ -24,10 +23,15 @@ type ConfigType struct {
 
 	RedisPort string
 
+	DevicesAmount int
+
 	EmailLogin    string
 	EmailPassword string
 	EmailServer   string
 	EmailPort     int
+
+	TestUserName  string
+	TestUserEmail string
 
 	Metric_1_Max int
 	Metric_1_Min int
@@ -87,13 +91,14 @@ func genConfig(filename string) error {
 	f.Close()
 
 	var initjson = ConfigType{
-		ServerPort: "3000",
+		ServerPort: "8090",
 		Postgre:    "ssa",
-		DBname:     "addrealty",
+		DBname:     "postgres",
 		Host:       "localhost",
 		Port:       "5432",
 		User:       "postgres",
-		Password:   "qwe",
+		Password:   "",
+		RedisPort:  "6379",
 	}
 
 	writebytes, err := json.MarshalIndent(initjson, "", "\t")

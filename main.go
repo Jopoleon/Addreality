@@ -12,6 +12,7 @@ import (
 	"github.com/Jopoleon/AddRealtyTask/config"
 	"github.com/Jopoleon/AddRealtyTask/db"
 	"github.com/Jopoleon/AddRealtyTask/metric"
+	"github.com/Jopoleon/AddRealtyTask/redisAlert"
 	"github.com/Jopoleon/AddRealtyTask/sendemail"
 )
 
@@ -39,6 +40,7 @@ func init() {
 }
 
 func main() {
+	// starting gorutines which imitating metrics from devices
 	for i := 0; i < 1; i++ {
 		go metric.GenerateMetric(i, Config.ServerPort)
 	}
@@ -48,23 +50,16 @@ func main() {
 		log.Println("main() db.SetDB err: ", dberr)
 		return
 	}
-	//err := redisAlert.SetRedisPool(Config.RedisPort)
-	//if dberr != nil {
-	//	log.Fatalln("main() redis.SetRedisPool err: ", dberr)
-	//	return
-	//}
-	//defer DBCloser()
+	err := redisAlert.SetRedisPool(Config.RedisPort)
+	if dberr != nil {
+		log.Fatalln("main() redis.SetRedisPool err: ", dberr)
+		return
+	}
+
 	defer DB.Close()
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+
 	http.HandleFunc("/metric", MetricHandler)
-	err := http.ListenAndServe(":"+Config.ServerPort, nil)
+	err = http.ListenAndServe(":"+Config.ServerPort, nil)
 	if err != nil {
 		log.Println(err)
 		return
@@ -73,6 +68,7 @@ func main() {
 
 }
 
+//MetricHandler handels requests from GenerateMetric function on /metric endpoint.
 func MetricHandler(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -80,13 +76,14 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("MetricHandler ioutil.ReadAll(resp.Body) error", err)
 		return
 	}
+
 	var metricData []metric.Metric
-	//
 	err = json.Unmarshal(body, &metricData)
 	if err != nil {
 		log.Println("MetricHandler json.Unmarshal error", err)
 		return
 	}
+	defer r.Body.Close()
 	// iterating through all metrics
 	for _, md := range metricData {
 		ok, met, err1 := metric.CheckMetricValues(md, Config)
@@ -94,36 +91,34 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 			msg := err1.Error() + fmt.Sprintf("%+v", met)
 
 			log.Printf("Bad metric: \n %s, %+v", msg, met)
-			//save alert to PostgreSQL
+			//saving alert to PostgreSQL
 			err = db.SaveAlert(met, msg, DB)
 			if err != nil {
 				log.Println("MetricHandler db.SaveAlert error", err)
 				return
 			}
+
+			//saving alert to Redis
+			err = redisAlert.SaveAlertRedis(met.Device_id, msg)
+			//err = redisAlert.SaveAlertRedis(1233, "TEST MESSAGE")
+			if err != nil {
+				log.Println("MetricHandler redis.SaveAlertRedis error", err)
+				return
+			}
+
+			//getting user's email whose device posted bad metric
 			userinfo, err := db.GetUserInfo(met.Device_id, DB)
 			if err != nil {
 				log.Println("MetricHandler db.GetUserInfo error", err)
 				return
 			}
 
+			//sending alert email here
 			err = sendemail.SendEmailwithMessage(userinfo.Email, msg, EmailAuth)
 			if err != nil {
 				log.Println("MetricHandler sendemail.SendEmailwithMessage error", err)
 				return
 			}
-			//save alert to Redis
-
-			//log.Println(" >>>>>>>>met.Device_id:", met.Device_id, "And mesaage: ", msg)
-			//err = redisAlert.SaveAlertRedis(met.Device_id, msg)
-			////err = redisAlert.SaveAlertRedis(1233, "TEST MESSAGE")
-			//if err != nil {
-			//	log.Println("MetricHandler redis.SaveAlertRedis error", err)
-			//	return
-			//}
-
-			//sav
-			//send alert email here
-
 			return
 		}
 		err = db.SaveMetric(md, DB)

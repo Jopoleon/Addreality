@@ -117,14 +117,14 @@ func initDeviceAlertsTable(DB *sql.DB) error {
 
 // AddUser adds new user to users table and returns new user's ID
 // so we can create devices with that user's ID
-func AddUser(DB *sql.DB) (userID int, err error) {
+func AddUser(DB *sql.DB, user User) (userID int, err error) {
 
 	sqlStatement := `
 INSERT INTO users (name, email)
 VALUES ($1, $2)
 RETURNING id`
 	id := 0
-	err = DB.QueryRow(sqlStatement, "TestUser", "egortictac3@gmail.com").Scan(&id)
+	err = DB.QueryRow(sqlStatement, user.Name, user.Email).Scan(&id)
 	if err != nil {
 		log.Fatalln("initUsers() db.QueryRow error: ", err)
 		return id, err

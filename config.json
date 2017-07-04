@@ -1,6 +1,5 @@
 {
 	"ServerPort": "8090",
-	"Postgre": "ssa",
 	"Host": "localhost",
 	"Port": "5432",
 	"User": "postgres",
@@ -9,10 +8,15 @@
 
 	"RedisPort": "6379",
 
+	"DevicesAmount": 500,
+
 	"EmailLogin"    : "spareroommailserver",
 	"EmailPassword"  : "Sendkey2017",
 	"EmailServer" : "smtp.gmail.com",
 	"EmailPort"    : 587,
+
+	"TestUserName": "TestUser",
+	"TestUserEmail": "egortictac3@gmail.ru",
 
 	"Metric_1_Max": 680,
 	"Metric_1_Min": 120,
