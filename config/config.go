@@ -48,7 +48,7 @@ type ConfigType struct {
 var Config = new(ConfigType)
 
 func GetConfig() *ConfigType {
-	log.Printf("GetConfig values: %+v", Config)
+	//log.Printf("GetConfig values: %+v", Config)
 	return Config
 }
 
@@ -92,13 +92,13 @@ func genConfig(filename string) error {
 
 	var initjson = ConfigType{
 		ServerPort: "8090",
-		Postgre:    "ssa",
 		DBname:     "postgres",
 		Host:       "localhost",
 		Port:       "5432",
 		User:       "postgres",
 		Password:   "",
-		RedisPort:  "6379",
+
+		RedisPort: "6379",
 	}
 
 	writebytes, err := json.MarshalIndent(initjson, "", "\t")

@@ -21,6 +21,7 @@ var (
 	DB        *sql.DB
 	dberr     error
 	EmailAuth sendemail.SmtpAuth
+	Sendmail  *bool
 )
 
 func init() {
@@ -28,7 +29,10 @@ func init() {
 
 	flag.StringVar(&configFileName, "config", "config.json",
 		"Specify configuration file name to use. File should be in folder you starting the application")
+	Sendmail = flag.Bool("sendmail", false,
+		"Specify sending emails with notifications about bad metrics or not")
 
+	//flag.StringVar(&Sendmail, )
 	flag.Parse()
 
 	config.InitConf(configFileName)
@@ -36,7 +40,8 @@ func init() {
 	Config = config.GetConfig()
 	EmailAuth = sendemail.AuthMailBox(sendemail.EmailUser{Config.EmailLogin, Config.EmailPassword, Config.EmailServer, Config.EmailPort})
 
-	log.Printf("CONFIG FILE MAIN: %+v", Config)
+	fmt.Printf("%s %+v \n", "CONFIG FILE MAIN:", Config)
+	log.Printf("%s %s", "Sending mail with notifications: ", *Sendmail)
 }
 
 func main() {
@@ -44,12 +49,13 @@ func main() {
 	for i := 0; i < 1; i++ {
 		go metric.GenerateMetric(i, Config.ServerPort)
 	}
-
-	DB, dberr = db.SetDB(Config.Host, Config.Port, Config.User, Config.Password, Config.DBname)
+	//setting connetcion to PostgreSQl
+	DB, dberr = db.SetDB(Config)
 	if dberr != nil {
 		log.Println("main() db.SetDB err: ", dberr)
 		return
 	}
+	//setting Redis connection pool
 	err := redisAlert.SetRedisPool(Config.RedisPort)
 	if dberr != nil {
 		log.Fatalln("main() redis.SetRedisPool err: ", dberr)
@@ -114,11 +120,14 @@ func MetricHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			//sending alert email here
-			err = sendemail.SendEmailwithMessage(userinfo.Email, msg, EmailAuth)
-			if err != nil {
-				log.Println("MetricHandler sendemail.SendEmailwithMessage error", err)
-				return
+			if *Sendmail {
+				err = sendemail.SendEmailwithMessage(userinfo.Email, msg, EmailAuth)
+				if err != nil {
+					log.Println("MetricHandler sendemail.SendEmailwithMessage error", err)
+					return
+				}
 			}
+
 			return
 		}
 		err = db.SaveMetric(md, DB)

@@ -20,7 +20,7 @@ var (
 
 // SetDB starts connection to PostgreSQL, initializing all requierd tables
 // and fills it with 1 new User and 10000 devices
-func SetDB(conf config.ConfigType) (DB *sql.DB, err error) {
+func SetDB(conf *config.ConfigType) (DB *sql.DB, err error) {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s  sslmode=disable",
 		conf.Host, conf.Port, conf.User, conf.DBname, conf.Password)
@@ -35,7 +35,7 @@ func SetDB(conf config.ConfigType) (DB *sql.DB, err error) {
 		log.Fatalln("SetDB DB.Ping() error: ", err)
 		return nil, err
 	}
-	log.Println("Successfully connected to " + dbname + " database")
+	log.Println("Successfully connected to " + conf.DBname + " database")
 
 	err = initPostgresTables(DB)
 	if err != nil {
