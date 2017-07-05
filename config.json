@@ -8,7 +8,7 @@
 
 	"RedisPort": "6379",
 
-	"DevicesAmount": 500,
+	"DevicesAmount": 10,
 
 	"EmailLogin"    : "spareroommailserver",
 	"EmailPassword"  : "Sendkey2017",
